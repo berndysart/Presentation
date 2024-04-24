@@ -129,4 +129,3 @@ USD |>
     y = "Mean",
     x = "Region"
   )
-```
