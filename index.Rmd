@@ -7,7 +7,7 @@ date: "March 27, 2024"
 output:
   xaringan::moon_reader:
     lib_dir: docs
-    css: [shinobi, rladies-fonts]
+    css: [default, shinobi, rladies-fonts]
     nature:
       highlightStyle: github
       highlightLines: true
@@ -15,7 +15,6 @@ output:
 ---
 
 ```{r SetupChunk, echo = FALSE, warning = FALSE, include = FALSE}
-
 library(tidyverse)
 library(haven)
 library(patchwork)
@@ -33,7 +32,7 @@ style_xaringan(
   text_font_size = "12rem"
   )
 
-USD <- read_dta("USD 30 Dataset/events.dta")
+USD <- read_dta("events.dta")
 
 USD2 = USD
 
@@ -66,66 +65,85 @@ USD2 =
     REGION = "Global"
   )
 ```
-#Data Introductory Information
-##Urban Social Disorder Data version 3
-- Event focused data set covering the years 1960-2014 for 186 national capitals. 
+# Data Introductory Information
+## Urban Social Disorder Data version 3
+- Event focused data set 
+  - International data collection
+  - Covering the years 1960-2014
+      - 186 international capitals. 
   - Social Disorder and political mobilisation. 
-- International data collection. 
-- 13,460 total observations and 33 total variables. 
+- 13,460 total observations
+  - 33 total variables
+      - First and Secondary Target
+      - First, Secondary, and Tertiary Actor
+      - Type of Event
+      - Length of Event
+      - Number of Deaths
+      - Number of Participants
 - Citation:
   -   Thomson, Henry, Karim Bahgat, Henrik Urdal & Halvard Buhaug 2022. "Urban Social Disorder 3.0: A global, city-level event dataset of political mobilization and disorder." Journal of Peace Research, forthcoming
 ---
+# Frequency of Event Types
 
-#Frequency of Event Types
-```{r ConflictChart, echo = FALSE, include = TRUE, fig.align ='center', fig.retina = 4}
+- Internationally, what is the most frequent type of social disorder or mobilisation event?
+  - The following graph spans the entire data set and all 13,460 observations
+```{r ConflictChart, echo = FALSE, include = TRUE, fig.retina = 4, fig.align='left'}
 USD |>  
   ggplot(aes(x = fct_infreq(TYPE), fill = TYPE))+
-  coord_flip(ylim = c(0,5000)) +
+  coord_flip(ylim = c(0,5000)) + 
   geom_bar(show.legend = FALSE) +
-  geom_text(stat = 'count', aes(label = after_stat(count), hjust = -0.5)) +
   scale_y_continuous(
-    expand = c(0,0)
+    expand = c(0,0),
+    labels = scales::percent) +
+  geom_text(
+    stat = 'count', 
+    aes(label = after_stat(round(count/sum(count)*100, digits = 1)), hjust = -0.5)
   ) +
+  theme_minimal(base_size = 15) +
   theme(
     axis.title.y = element_blank(),
-    axis.title.x = element_text(size = 10),
-    axis.text.y = element_text(size = 12),
     axis.text.x = element_blank(),
     axis.ticks.x = element_blank(),
     axis.line = element_line(colour = "black"),
-    panel.background = element_blank()
+    panel.background = element_blank(), 
+    panel.grid = element_blank()
   ) +
   labs(
-    y = "Frequency"
+    y = "Percentage"
   )
 ```
 ---
+# Primary Target: Government
 
-#Government Target
+- What was the average amount of events that primarily targeted the government?
+  - The graph shows the average of events targeting the government, both internationally and by individual region, between 1960 and 2014
 ```{r TargetAvg, echo = FALSE, include = TRUE, fig.align = 'center', fig.retina = 4}
 USD |>
   group_by(REGION) |>
   summarise(
     mean = mean(TARGET1 == "Government")
   ) |>
-  bind_rows(USD2) |>
+  bind_rows(USD2) |> #adds the created variable that acts as the global sample mean
   ggplot(aes(
-    x = fct_rev(fct_infreq(REGION, mean)),
+    x = fct_rev(fct_infreq(REGION, mean)), 
     y = mean,
     fill = (REGION == "Global")
   )) +
   geom_col(show.legend = FALSE) +
+  geom_text(aes(label = round(mean*100, digits = 1)), hjust = -0.5) +
   coord_flip() +
   scale_y_continuous(
-    expand = c(0,0)
+    expand = c(0,0),
+    limits = c(0,0.5)
   ) +
+  theme_minimal(base_size = 15) +
   theme(
     axis.line = element_line(colour = "black"),
-    axis.text.y = element_text(size = 10),
-    axis.text.x = element_text(size = 12),
-    panel.background = element_blank()
+    axis.title.y = element_blank(),
+    axis.text.x = element_blank(),
+    panel.background = element_blank(),
+    panel.grid = element_blank()
   ) +
   labs(
-    y = "Mean",
-    x = "Region"
+    y = "Average"
   )
